@@ -1,0 +1,8 @@
+logging:
+  level:
+    root: INFO
+    com.jozard: INFO
+    org.telegram.telegrambots.updatesreceivers.DefaultBotSession: INFO
+
+botConfig:
+  token: ${REMINDER_POLL_BOT_TOKEN}
