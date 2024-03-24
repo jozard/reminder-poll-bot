@@ -1,8 +1,9 @@
 package com.jozard.reminderpollbot.actions;
 
-import com.jozard.reminderpollbot.MessageService;
-import com.jozard.reminderpollbot.StickerService;
-import com.jozard.reminderpollbot.users.ChatService;
+import com.jozard.reminderpollbot.service.ChatService;
+import com.jozard.reminderpollbot.service.MessageService;
+import com.jozard.reminderpollbot.service.StateMachine;
+import com.jozard.reminderpollbot.service.StickerService;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
@@ -19,7 +20,8 @@ public class RequestReminderWeeks extends RequestWithReminderWeeksKeyboard {
     }
 
     @Override
-    protected void doExecute(AbsSender absSender, long chatId, User user, String[] arguments) {
+    protected void doExecute(AbsSender absSender, StateMachine state, User user, String[] arguments) {
+        long chatId = state.getChatId();
         int page = Integer.parseInt(arguments[0]);
         InlineKeyboardMarkup keyboardMarkup = markup(chatId, user, page);
 

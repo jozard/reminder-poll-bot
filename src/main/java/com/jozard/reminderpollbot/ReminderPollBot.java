@@ -8,8 +8,9 @@ import com.jozard.reminderpollbot.listeners.OnDeleteTitleSent;
 import com.jozard.reminderpollbot.listeners.OnReminderTitleSent;
 import com.jozard.reminderpollbot.listeners.OnTimeSent;
 import com.jozard.reminderpollbot.listeners.OnWeeksSent;
-import com.jozard.reminderpollbot.users.ChatService;
-import com.jozard.reminderpollbot.users.StateMachine;
+import com.jozard.reminderpollbot.service.ChatService;
+import com.jozard.reminderpollbot.service.ReminderService;
+import com.jozard.reminderpollbot.service.StateMachine;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,12 +30,9 @@ import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.text.MessageFormat;
-import java.time.DayOfWeek;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 @Service
 public class ReminderPollBot extends TelegramLongPollingCommandBot implements ApplicationContextAware {
@@ -43,7 +41,9 @@ public class ReminderPollBot extends TelegramLongPollingCommandBot implements Ap
     private final ChatService chatService;
     private final AddReminder addReminder;
     private final AddWeek addWeek;
+    private final AddAllWeeks addAllWeeks;
     private final AddDayOfWeek addDayOfWeek;
+    private final AddAllDaysOfWeek addAllDaysOfWeek;
     private final RequestReminderWeeks requestReminderWeeks;
     private final CreateReminder createReminder;
     private final RequestReminderDays requestReminderDays;
@@ -60,12 +60,14 @@ public class ReminderPollBot extends TelegramLongPollingCommandBot implements Ap
     private final ShowReminderList showReminderList;
     private final RequestDeleteTitle requestDeleteTitle;
 
-    public ReminderPollBot(@Value("${botConfig.token}") String token, ChatService chatService, Start start, Stop stop, AddReminder addReminder, AddWeek addWeek, AddDayOfWeek addDayOfWeek, RequestReminderWeeks requestReminderWeeks, CreateReminder createReminder, RequestReminderDays requestReminderDays, RequestReminderTime requestReminderTime, UpdateReminderWeeksKeyboard updateReminderWeeksKeyboard, OnReminderTitleSent onReminderTitleSent, OnWeeksSent onWeeksSent, OnTimeSent onTimeSent, OnDeleteTitleSent onDeleteTitleSent, UpdateTime updateTime, ReminderService reminderService, ShowReminderList showReminderList, RequestDeleteTitle requestDeleteTitle) throws TelegramApiException {
+    public ReminderPollBot(@Value("${botConfig.token}") String token, ChatService chatService, Start start, Stop stop, AddReminder addReminder, AddWeek addWeek, AddAllWeeks addAllWeeks, AddDayOfWeek addDayOfWeek, AddAllDaysOfWeek addAllDaysOfWeek, RequestReminderWeeks requestReminderWeeks, CreateReminder createReminder, RequestReminderDays requestReminderDays, RequestReminderTime requestReminderTime, UpdateReminderWeeksKeyboard updateReminderWeeksKeyboard, OnReminderTitleSent onReminderTitleSent, OnWeeksSent onWeeksSent, OnTimeSent onTimeSent, OnDeleteTitleSent onDeleteTitleSent, UpdateTime updateTime, ReminderService reminderService, ShowReminderList showReminderList, RequestDeleteTitle requestDeleteTitle) throws TelegramApiException {
         super(new DefaultBotOptions(), true, token);
         this.chatService = chatService;
         this.addReminder = addReminder;
         this.addWeek = addWeek;
+        this.addAllWeeks = addAllWeeks;
         this.addDayOfWeek = addDayOfWeek;
+        this.addAllDaysOfWeek = addAllDaysOfWeek;
         this.requestReminderWeeks = requestReminderWeeks;
         this.createReminder = createReminder;
         this.requestReminderDays = requestReminderDays;
@@ -102,6 +104,7 @@ public class ReminderPollBot extends TelegramLongPollingCommandBot implements Ap
         } catch (TelegramApiException e) {
             logger.error("Couldn't update commands for the menu button. " + e);
         }
+        logger.info("Registering commands {}", setCommands);
         registerAll(commands.toArray(Command[]::new));
     }
 
@@ -161,8 +164,7 @@ public class ReminderPollBot extends TelegramLongPollingCommandBot implements Ap
             // a message from the user. Let's process it.
             var user = message.getFrom();
             Long chatId = message.getChatId();
-            Optional<StateMachine> state = chatService.getChat(chatId).flatMap(
-                    ChatService.ChatInstance::getStateMachine);
+            Optional<StateMachine> state = chatService.getChatState(chatId);
             if (state.isEmpty()) {
                 // there are no ongoing activity in this chat. Ignore this message,
                 return;
@@ -190,26 +192,13 @@ public class ReminderPollBot extends TelegramLongPollingCommandBot implements Ap
                     callbackQuery.getFrom().getUserName()));
             User user = callbackQuery.getFrom();
             Long chatId = callbackQuery.getMessage().getChatId();
-            ChatService.ChatInstance chatInstance = chatService.get(chatId, user);
-            Optional<StateMachine> currentState = chatInstance.getStateMachine();
+
             if (callbackQuery.getData().equals("btn_add")) {
                 logger.debug("Add button callback received");
-                currentState.ifPresentOrElse(stateMachine -> logger.debug("State is " + stateMachine.getCurrentState()),
-                        () -> logger.debug("State is not created"));
-                if (currentState.isEmpty()) {
-                    StateMachine state = chatInstance.start(user);
-                    state.setPendingTitle();
-                    this.addReminder.execute(this, user, chatId, new String[]{callbackQuery.getId()});
-                }
+                this.addReminder.execute(this, user, chatId, new String[]{callbackQuery.getId()});
             } else if (callbackQuery.getData().equals("btn_remove")) {
                 logger.debug("Remove button callback received");
-                currentState.ifPresentOrElse(stateMachine -> logger.debug("State is " + stateMachine.getCurrentState()),
-                        () -> logger.debug("State is not created"));
-                if (currentState.isEmpty()) {
-                    StateMachine state = chatInstance.start(user);
-                    state.setPendingDeleteTitle();
-                    this.requestDeleteTitle.execute(this, user, chatId, new String[]{callbackQuery.getId()});
-                }
+                this.requestDeleteTitle.execute(this, user, chatId, new String[]{callbackQuery.getId()});
             } else if (callbackQuery.getData().contains("btn_weeks_page_")) {
                 String page = callbackQuery.getData().split("btn_weeks_page_")[1];
                 String messageId = String.valueOf(callbackQuery.getMessage().getMessageId());
@@ -221,9 +210,9 @@ public class ReminderPollBot extends TelegramLongPollingCommandBot implements Ap
                 this.addWeek.execute(this, user, chatId,
                         new String[]{week, callbackQuery.getId(), messageId, callbackQuery.getInlineMessageId()});
             } else if (callbackQuery.getData().contains("btn_weeks_all")) {
-                currentState.get().getWeeks().addAll(IntStream.rangeClosed(1, 52).boxed().collect(Collectors.toSet()));
-                this.requestReminderDays.execute(this, user, chatId,
-                        new String[]{callbackQuery.getId()});
+                String messageId = String.valueOf(callbackQuery.getMessage().getMessageId());
+                this.addAllWeeks.execute(this, user, chatId,
+                        new String[]{callbackQuery.getId(), messageId, callbackQuery.getInlineMessageId()});
             } else if (callbackQuery.getData().contains("btn_weeks_done")) {
                 this.requestReminderDays.execute(this, user, chatId,
                         new String[]{callbackQuery.getId()});
@@ -232,9 +221,7 @@ public class ReminderPollBot extends TelegramLongPollingCommandBot implements Ap
                         new String[]{callbackQuery.getId()});
             } else if (callbackQuery.getData().contains("btn_day_of_week_")) {
                 if (callbackQuery.getData().equals("btn_day_of_week_all")) {
-                    currentState.get().getDays().addAll(Arrays.stream(DayOfWeek.values()).toList());
-                    this.requestReminderTime.execute(this, user, chatId,
-                            new String[]{callbackQuery.getId()});
+                    this.addAllDaysOfWeek.execute(this, user, chatId, new String[]{callbackQuery.getId()});
                 } else if (callbackQuery.getData().contains("btn_day_of_week_done")) {
                     this.requestReminderTime.execute(this, user, chatId,
                             new String[]{callbackQuery.getId()});
@@ -245,7 +232,6 @@ public class ReminderPollBot extends TelegramLongPollingCommandBot implements Ap
                             new String[]{day, callbackQuery.getId(), messageId, callbackQuery.getInlineMessageId()});
                 }
             } else if (callbackQuery.getData().equals("btn_time_done")) {
-                String messageId = String.valueOf(callbackQuery.getMessage().getMessageId());
                 this.createReminder.execute(this, user, chatId,
                         new String[]{callbackQuery.getId()});
             } else if (callbackQuery.getData().contains("btn_time_")) {

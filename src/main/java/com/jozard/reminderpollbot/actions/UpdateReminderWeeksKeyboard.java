@@ -1,8 +1,9 @@
 package com.jozard.reminderpollbot.actions;
 
-import com.jozard.reminderpollbot.MessageService;
-import com.jozard.reminderpollbot.StickerService;
-import com.jozard.reminderpollbot.users.ChatService;
+import com.jozard.reminderpollbot.service.ChatService;
+import com.jozard.reminderpollbot.service.MessageService;
+import com.jozard.reminderpollbot.service.StateMachine;
+import com.jozard.reminderpollbot.service.StickerService;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageReplyMarkup;
 import org.telegram.telegrambots.meta.api.objects.User;
@@ -21,8 +22,8 @@ public class UpdateReminderWeeksKeyboard extends RequestWithReminderWeeksKeyboar
     }
 
     @Override
-    protected void doExecute(AbsSender absSender, long chatId, User user, String[] arguments) {
-
+    protected void doExecute(AbsSender absSender, StateMachine state, User user, String[] arguments) {
+        long chatId = state.getChatId();
         int page = Integer.parseInt(arguments[0]);
         int messageId = Integer.parseInt(arguments[1]);
         String inlineMessageId = arguments[2];
@@ -33,7 +34,7 @@ public class UpdateReminderWeeksKeyboard extends RequestWithReminderWeeksKeyboar
         try {
             absSender.execute(editMessageReplyMarkup);
         } catch (TelegramApiException e) {
-            e.printStackTrace();
+            logger.error("Failed to update reminder weeks keyboard", e);
         }
     }
 

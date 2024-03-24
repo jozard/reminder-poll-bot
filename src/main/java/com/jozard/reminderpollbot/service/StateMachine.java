@@ -1,4 +1,4 @@
-package com.jozard.reminderpollbot.users;
+package com.jozard.reminderpollbot.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -7,23 +7,22 @@ import org.telegram.telegrambots.meta.api.objects.User;
 import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 
 public class StateMachine {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final User user;
-    private final ChatService.ChatInstance chat;
+    private final Long chatId;
     private final Set<Integer> weeks = new HashSet<>();
     private final Set<DayOfWeek> days = new HashSet<>();
     private ReminderState currentState = ReminderState.NONE;
     private String title;
     private LocalTime time;
 
-    public StateMachine(User user, ChatService.ChatInstance chat) {
+    public StateMachine(User user, Long chatId) {
         this.user = user;
-        this.chat = chat;
+        this.chatId = chatId;
     }
 
     public String getTitle() {
@@ -43,8 +42,8 @@ public class StateMachine {
         return currentState;
     }
 
-    public Optional<ChatService.ChatInstance> getChat() {
-        return Optional.ofNullable(chat);
+    public Long getChatId() {
+        return chatId;
     }
 
     public boolean isPendingTitle() {

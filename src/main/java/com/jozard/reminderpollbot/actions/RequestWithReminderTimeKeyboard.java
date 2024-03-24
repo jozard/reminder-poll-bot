@@ -1,8 +1,8 @@
 package com.jozard.reminderpollbot.actions;
 
-import com.jozard.reminderpollbot.MessageService;
-import com.jozard.reminderpollbot.StickerService;
-import com.jozard.reminderpollbot.users.ChatService;
+import com.jozard.reminderpollbot.service.MessageService;
+import com.jozard.reminderpollbot.service.StickerService;
+import com.jozard.reminderpollbot.service.ChatService;
 import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;

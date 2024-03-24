@@ -1,8 +1,8 @@
 package com.jozard.reminderpollbot.listeners;
 
-import com.jozard.reminderpollbot.MessageService;
-import com.jozard.reminderpollbot.users.ChatService;
-import com.jozard.reminderpollbot.users.StateMachine;
+import com.jozard.reminderpollbot.service.ChatService;
+import com.jozard.reminderpollbot.service.MessageService;
+import com.jozard.reminderpollbot.service.StateMachine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -22,13 +22,13 @@ abstract public class ChatListener {
         this.chatService = chatService;
     }
 
-    abstract void doExecute(AbsSender absSender, ChatService.ChatInstance chat, User user, Message message, String[] arguments);
+    abstract void doExecute(AbsSender absSender, StateMachine state, User user, Message message, String[] arguments);
 
     public void execute(AbsSender absSender, long chatId, User user, Message message, String[] strings) {
-        Optional<ChatService.ChatInstance> chat = chatService.getChat(chatId);
-        Optional<User> stateUser = chat.flatMap(ChatService.ChatInstance::getStateMachine).map(StateMachine::getUser);
+        Optional<StateMachine> state = chatService.getChatState(chatId);
+        Optional<User> stateUser = state.map(StateMachine::getUser);
         if (stateUser.isPresent() && stateUser.get().equals(user)) {
-            doExecute(absSender, chat.get(), user, message, strings);
+            doExecute(absSender, state.get(), user, message, strings);
         }
     }
 }

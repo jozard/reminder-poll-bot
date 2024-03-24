@@ -1,7 +1,7 @@
 package com.jozard.reminderpollbot.actions;
 
-import com.jozard.reminderpollbot.MessageService;
-import com.jozard.reminderpollbot.ReminderService;
+import com.jozard.reminderpollbot.service.MessageService;
+import com.jozard.reminderpollbot.service.ReminderService;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.bots.AbsSender;

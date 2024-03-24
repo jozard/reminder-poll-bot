@@ -1,4 +1,4 @@
-package com.jozard.reminderpollbot;
+package com.jozard.reminderpollbot.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

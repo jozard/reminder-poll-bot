@@ -9,33 +9,37 @@ import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.bots.AbsSender;
 
 import java.text.MessageFormat;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Component
-public class AddWeek extends Action {
+public class AddAllWeeks extends Action {
     private final StickerService stickerService;
+    private final RequestReminderDays requestReminderDays;
 
-    public AddWeek(ChatService chatService, StickerService stickerService, MessageService messageService) {
+
+    public AddAllWeeks(ChatService chatService, StickerService stickerService, MessageService messageService, RequestReminderDays requestReminderDays) {
         super(messageService, chatService);
         this.stickerService = stickerService;
+        this.requestReminderDays = requestReminderDays;
     }
 
     protected void doExecute(AbsSender absSender, StateMachine state, User user, String[] arguments) {
         long chatId = state.getChatId();
-        logger.info("User {} adds week to a reminder in chat {}",
+        logger.info("User {} adds 52 weeks to a reminder in chat {}",
                 user.getUserName() == null ? user.getFirstName() : user.getUserName(), chatId);
-
-        String callbackQueryId = arguments[1];
+        String callbackQueryId = arguments[0];
         if (state.isPendingWeeks()) {
-            int week = Integer.parseInt(arguments[0]);
-            state.getWeeks().add(week);
-            sendAnswerCallbackQuery(absSender, MessageFormat.format("Week {0} added", week), callbackQueryId);
+            state.getWeeks().addAll(IntStream.rangeClosed(1, 52).boxed().collect(Collectors.toSet()));
+            sendAnswerCallbackQuery(absSender, "52 weeks added", callbackQueryId);
+            this.requestReminderDays.execute(absSender, user, chatId,
+                    new String[]{callbackQueryId});
         } else {
             sendAnswerCallbackQuery(absSender,
                     MessageFormat.format(
                             "{0}, you have already been adding/removing a reminder. Answer the last request or use the /start command {1}",
                             user.getUserName(), ":wink:"), callbackQueryId);
         }
-
 
     }
 

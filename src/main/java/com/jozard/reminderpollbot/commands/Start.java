@@ -1,9 +1,9 @@
 package com.jozard.reminderpollbot.commands;
 
 
-import com.jozard.reminderpollbot.MessageService;
-import com.jozard.reminderpollbot.ReminderService;
-import com.jozard.reminderpollbot.users.ChatService;
+import com.jozard.reminderpollbot.service.ChatService;
+import com.jozard.reminderpollbot.service.MessageService;
+import com.jozard.reminderpollbot.service.ReminderService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
@@ -46,7 +46,7 @@ public class Start extends Command {
         InlineKeyboardButton listButton = InlineKeyboardButton.builder().text("List").callbackData(
                 "btn_list").build();
         keyboardRow.add(addButton);
-        if (reminderService.hasReminders()) {
+        if (reminderService.hasReminders(chat.getId())) {
             keyboardRow.add(removeButton);
             keyboardRow.add(listButton);
         }

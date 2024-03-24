@@ -1,17 +1,13 @@
 package com.jozard.reminderpollbot.commands;
 
 
-import com.jozard.reminderpollbot.MessageService;
-import com.jozard.reminderpollbot.users.ChatService;
-import com.jozard.reminderpollbot.users.StateMachine;
-import org.springframework.stereotype.Component;
+import com.jozard.reminderpollbot.service.ChatService;
+import com.jozard.reminderpollbot.service.MessageService;
 import org.telegram.telegrambots.extensions.bots.commandbot.commands.BotCommand;
 import org.telegram.telegrambots.extensions.bots.commandbot.commands.IBotCommand;
 import org.telegram.telegrambots.meta.api.objects.Chat;
 import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.bots.AbsSender;
-
-import java.util.Optional;
 
 public abstract class Command extends BotCommand implements IBotCommand {
 
@@ -29,8 +25,7 @@ public abstract class Command extends BotCommand implements IBotCommand {
     @Override
     public void execute(AbsSender absSender, User user, Chat chat, String[] strings) {
         long chatId = chat.getId();
-        Optional<User> stateUser = chatService.get(chatId, user).getStateMachine().map(StateMachine::getUser);
-        if (stateUser.isEmpty()) {
+        if (chatService.getChatState(chatId).isEmpty()) {
             onCommandAction(absSender, chat, user);
         }
     }

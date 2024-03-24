@@ -1,4 +1,4 @@
-package com.jozard.reminderpollbot;
+package com.jozard.reminderpollbot.service;
 
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendSticker;

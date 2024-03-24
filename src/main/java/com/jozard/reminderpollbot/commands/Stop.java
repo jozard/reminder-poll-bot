@@ -1,8 +1,9 @@
 package com.jozard.reminderpollbot.commands;
 
 
-import com.jozard.reminderpollbot.MessageService;
-import com.jozard.reminderpollbot.users.ChatService;
+import com.jozard.reminderpollbot.service.ChatService;
+import com.jozard.reminderpollbot.service.MessageService;
+import com.jozard.reminderpollbot.service.StateMachine;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Chat;
 import org.telegram.telegrambots.meta.api.objects.User;
@@ -24,10 +25,13 @@ public class Stop extends UserAwareCommand {
 
     @Override
     void onCommandAction(AbsSender absSender, Chat chat, User user) {
+        logger.info("User {} stops bot in {} chat {}", user.getFirstName(),
+                chat.isGroupChat() ? "group" : "private", chat.getId());
         var chatId = chat.getId();
         if (chatService.chatExists(chatId)) {
-            Optional<ChatService.ChatInstance> chatInstance = chatService.getChat(chatId);
-            chatInstance.ifPresent(value -> chatService.remove(chatId));
+            Optional<StateMachine> state = chatService.getChatState(chatId);
+            state.ifPresentOrElse(value -> chatService.remove(chatId),
+                    () -> logger.info("State not found for chat {}", chat.getId()));
         }
     }
 

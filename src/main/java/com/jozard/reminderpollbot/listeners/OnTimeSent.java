@@ -1,9 +1,9 @@
 package com.jozard.reminderpollbot.listeners;
 
-import com.jozard.reminderpollbot.MessageService;
 import com.jozard.reminderpollbot.actions.CreateReminder;
-import com.jozard.reminderpollbot.users.ChatService;
-import com.jozard.reminderpollbot.users.StateMachine;
+import com.jozard.reminderpollbot.service.ChatService;
+import com.jozard.reminderpollbot.service.MessageService;
+import com.jozard.reminderpollbot.service.StateMachine;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.User;
@@ -26,28 +26,26 @@ public class OnTimeSent extends ChatListener {
         this.createReminder = createReminder;
     }
 
+
     @Override
-    void doExecute(AbsSender absSender, ChatService.ChatInstance chat, User user, Message message, String[] arguments) {
+    void doExecute(AbsSender absSender, StateMachine state, User user, Message message, String[] arguments) {
+        long chatId = state.getChatId();
         // reminder weeks sent
         logger.info(
                 "The user {} is pending reminder time in chatInstance ID =  {}. We assume it is a time in the message",
-                user.getFirstName(), chat.getChatId());
+                user.getFirstName(), chatId);
         try {
             LocalTime timeSent = LocalTime.parse(message.getText().trim());
-
-            StateMachine state = chat.getStateMachine().orElseThrow();
             state.setTime(LocalTime.ofInstant(Instant.now(), ZoneId.of("UTC")).withHour(timeSent.getHour()).withMinute(
                     timeSent.getMinute()).truncatedTo(ChronoUnit.MINUTES));
 
             logger.info("Time {} added by the user {}", state.getTime(), user.getUserName());
-            this.createReminder.execute(absSender, user, chat.getChatId(), new String[]{});
+            this.createReminder.execute(absSender, user, chatId, new String[]{});
         } catch (DateTimeParseException e) {
             ReplyKeyboardRemove keyboardRemove = ReplyKeyboardRemove.builder().removeKeyboard(false).build();
-            messageService.send(absSender, chat.getChatId(),
+            messageService.send(absSender, chatId,
                     "The response must be a UTC time in format HH:mm",
                     keyboardRemove);
         }
-
     }
-
 }

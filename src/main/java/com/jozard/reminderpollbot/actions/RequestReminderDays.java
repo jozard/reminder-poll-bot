@@ -1,11 +1,10 @@
 package com.jozard.reminderpollbot.actions;
 
-import com.jozard.reminderpollbot.MessageService;
-import com.jozard.reminderpollbot.StickerService;
-import com.jozard.reminderpollbot.users.ChatService;
-import com.jozard.reminderpollbot.users.StateMachine;
+import com.jozard.reminderpollbot.service.ChatService;
+import com.jozard.reminderpollbot.service.MessageService;
+import com.jozard.reminderpollbot.service.StateMachine;
+import com.jozard.reminderpollbot.service.StickerService;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
@@ -31,14 +30,13 @@ public class RequestReminderDays extends Action {
     }
 
     @Override
-    protected void doExecute(AbsSender absSender, long chatId, User user, String[] arguments) {
-        ChatService.ChatInstance chat = chatService.getChat(chatId).orElseThrow();
-        StateMachine state = chat.getStateMachine().orElseThrow();
+    protected void doExecute(AbsSender absSender, StateMachine state, User user, String[] arguments) {
+        long chatId = state.getChatId();
         if (state.getWeeks().isEmpty()) {
             if (arguments.length == 0) { // no callback message ID
-                sendAtLeastOneWeekRequired(absSender, chat);
+                sendAtLeastOneWeekRequired(absSender, state);
             } else {
-                sendAnswerCallbackQuery(absSender, arguments[0]);
+                sendAnswerCallbackQuery(absSender, RequestReminderDays.AT_LEAST_ONE_WEEK_NUMBER_REQUIRED, arguments[0]);
             }
         } else {
             state.pendingDays();
@@ -53,11 +51,9 @@ public class RequestReminderDays extends Action {
         InlineKeyboardMarkup keyboardMarkup = new InlineKeyboardMarkup();
         List<InlineKeyboardButton> keyboardRow = new ArrayList<>();
         List<InlineKeyboardButton> keyboardRowExtra = new ArrayList<>();
-        Arrays.stream(DayOfWeek.values()).forEach(dayOfWeek -> {
-            keyboardRow.add(InlineKeyboardButton.builder().text(
-                    dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.of(user.getLanguageCode()))).callbackData(
-                    "btn_day_of_week_" + dayOfWeek.getValue()).build());
-        });
+        Arrays.stream(DayOfWeek.values()).forEach(dayOfWeek -> keyboardRow.add(InlineKeyboardButton.builder().text(
+                dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.of(user.getLanguageCode()))).callbackData(
+                "btn_day_of_week_" + dayOfWeek.getValue()).build()));
         keyboardRowExtra.add(
                 InlineKeyboardButton.builder().text("All").callbackData("btn_day_of_week_all").build());
         keyboardRowExtra.add(
@@ -67,22 +63,10 @@ public class RequestReminderDays extends Action {
         return keyboardMarkup;
     }
 
-    private void sendAtLeastOneWeekRequired(AbsSender absSender, ChatService.ChatInstance chat) {
+    private void sendAtLeastOneWeekRequired(AbsSender absSender, StateMachine stateMachine) {
         ReplyKeyboardRemove keyboardRemove = ReplyKeyboardRemove.builder().removeKeyboard(false).build();
-        messageService.send(absSender, chat.getChatId(), AT_LEAST_ONE_WEEK_NUMBER_REQUIRED,
+        messageService.send(absSender, stateMachine.getChatId(), AT_LEAST_ONE_WEEK_NUMBER_REQUIRED,
                 keyboardRemove);
     }
 
-    private void sendAnswerCallbackQuery(AbsSender absSender, String callbackQueryId) {
-        AnswerCallbackQuery answerCallbackQuery = new AnswerCallbackQuery();
-        answerCallbackQuery.setCallbackQueryId(callbackQueryId);
-        answerCallbackQuery.setShowAlert(false);
-        answerCallbackQuery.setText(RequestReminderDays.AT_LEAST_ONE_WEEK_NUMBER_REQUIRED);
-        try {
-            absSender.execute(answerCallbackQuery);
-        } catch (Exception e) {
-            logger.error("Answer callback query failed", e);
-        }
-
-    }
 }

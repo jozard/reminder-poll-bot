@@ -1,14 +1,12 @@
 package com.jozard.reminderpollbot.actions;
 
-import com.jozard.reminderpollbot.MessageService;
-import com.jozard.reminderpollbot.StickerService;
-import com.jozard.reminderpollbot.users.ChatService;
-import com.jozard.reminderpollbot.users.StateMachine;
+import com.jozard.reminderpollbot.service.ChatService;
+import com.jozard.reminderpollbot.service.MessageService;
+import com.jozard.reminderpollbot.service.StateMachine;
+import com.jozard.reminderpollbot.service.StickerService;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.bots.AbsSender;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.text.MessageFormat;
 import java.time.DayOfWeek;
@@ -25,37 +23,28 @@ public class AddDayOfWeek extends Action {
     }
 
     @Override
-    protected void doExecute(AbsSender absSender, long chatId, User user, String[] arguments) {
+    protected void doExecute(AbsSender absSender, StateMachine state, User user, String[] arguments) {
+        long chatId = state.getChatId();
         logger.info("User {} adds day to a reminder in chat {}",
                 user.getUserName() == null ? user.getFirstName() : user.getUserName(), chatId);
 
-        StateMachine state = chatService.get(chatId, user).getStateMachine().orElseThrow();
-        try {
-            String callbackQueryId = arguments[1];
-            if (state.isPendingDays()) {
-                DayOfWeek day = DayOfWeek.of(Integer.parseInt(arguments[0]));
-                String messageId = arguments[2];
-                String inlineMessageId = arguments[3];
-                state.getDays().add(day);
-                sendAnswerCallbackQuery(absSender, MessageFormat.format("{0} added",
-                        day.getDisplayName(TextStyle.FULL, Locale.of(user.getLanguageCode()))), callbackQueryId);
-            } else {
-                sendAnswerCallbackQuery(absSender,
-                        MessageFormat.format(
-                                "{0}, you have already been adding/removing a reminder. Answer the last request or use the /start command {1}",
-                                user.getUserName(), ":wink:"), callbackQueryId);
-            }
-        } catch (TelegramApiException e) {
 
+        String callbackQueryId = arguments[1];
+        if (state.isPendingDays()) {
+            DayOfWeek day = DayOfWeek.of(Integer.parseInt(arguments[0]));
+            String messageId = arguments[2];
+            String inlineMessageId = arguments[3];
+            state.getDays().add(day);
+            sendAnswerCallbackQuery(absSender, MessageFormat.format("{0} added",
+                    day.getDisplayName(TextStyle.FULL, Locale.of(user.getLanguageCode()))), callbackQueryId);
+        } else {
+            sendAnswerCallbackQuery(absSender,
+                    MessageFormat.format(
+                            "{0}, you have already been adding/removing a reminder. Answer the last request or use the /start command {1}",
+                            user.getUserName(), ":wink:"), callbackQueryId);
         }
 
+
     }
 
-    private void sendAnswerCallbackQuery(AbsSender absSender, String message, String callbackQueryId) throws TelegramApiException {
-        AnswerCallbackQuery answerCallbackQuery = new AnswerCallbackQuery();
-        answerCallbackQuery.setCallbackQueryId(callbackQueryId);
-        answerCallbackQuery.setShowAlert(false);
-        answerCallbackQuery.setText(message);
-        absSender.execute(answerCallbackQuery);
-    }
 }

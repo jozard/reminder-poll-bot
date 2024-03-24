@@ -1,9 +1,9 @@
 package com.jozard.reminderpollbot.listeners;
 
-import com.jozard.reminderpollbot.MessageService;
 import com.jozard.reminderpollbot.actions.RequestReminderDays;
-import com.jozard.reminderpollbot.users.ChatService;
-import com.jozard.reminderpollbot.users.StateMachine;
+import com.jozard.reminderpollbot.service.ChatService;
+import com.jozard.reminderpollbot.service.MessageService;
+import com.jozard.reminderpollbot.service.StateMachine;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.User;
@@ -24,18 +24,17 @@ public class OnWeeksSent extends ChatListener {
     }
 
     @Override
-    void doExecute(AbsSender absSender, ChatService.ChatInstance chat, User user, Message message, String[] arguments) {
+    void doExecute(AbsSender absSender, StateMachine state, User user, Message message, String[] arguments) {
+        long chatId = state.getChatId();
         // reminder weeks sent
         logger.info(
                 "The user {} is pending reminder weeks in chatInstance ID =  {}. We assume it is a weeks list in the message",
-                user.getFirstName(), chat.getChatId());
+                user.getFirstName(), chatId);
 
         String weeks = message.getText();
 
-        StateMachine state = chat.getStateMachine().orElseThrow();
-
         if ("done".equals(weeks)) {
-            this.requestReminderDays.execute(absSender, user, chat.getChatId(), new String[]{});
+            this.requestReminderDays.execute(absSender, user, chatId, new String[]{});
         } else {
             List<String> weeksList = Arrays.stream(weeks.split(",")).map(String::trim).toList();
             if (weeksList.isEmpty() || weeksList.stream().anyMatch(week -> {
@@ -50,7 +49,7 @@ public class OnWeeksSent extends ChatListener {
                 return false;
             })) {
                 ReplyKeyboardRemove keyboardRemove = ReplyKeyboardRemove.builder().removeKeyboard(false).build();
-                messageService.send(absSender, chat.getChatId(),
+                messageService.send(absSender, chatId,
                         "The response must be a comma-separated list of week numbers",
                         keyboardRemove);
             }
@@ -60,8 +59,8 @@ public class OnWeeksSent extends ChatListener {
             logger.info("Weeks {} added by the user {}. Current weeks are {}", weeksList, user.getUserName(),
                     state.getWeeks());
             ReplyKeyboardRemove keyboardRemove = ReplyKeyboardRemove.builder().removeKeyboard(true).build();
-            messageService.send(absSender, chat.getChatId(), "Weeks added", keyboardRemove);
-            this.requestReminderDays.execute(absSender, user, chat.getChatId(), new String[]{});
+            messageService.send(absSender, chatId, "Weeks added", keyboardRemove);
+            this.requestReminderDays.execute(absSender, user, chatId, new String[]{});
         }
 
     }
