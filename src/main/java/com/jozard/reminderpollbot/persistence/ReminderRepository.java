@@ -3,7 +3,6 @@ package com.jozard.reminderpollbot.persistence;
 import com.jozard.reminderpollbot.domain.Reminder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
@@ -30,12 +29,10 @@ public class ReminderRepository {
     private final NamedParameterJdbcTemplate jdbcTemplate;
     private final SimpleJdbcInsert jdbcInsert;
 
-    private final CacheManager cacheManager;
 
-    public ReminderRepository(DataSource dataSource, CacheManager cacheManager) {
+    public ReminderRepository(DataSource dataSource) {
         this.jdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
         jdbcInsert = new SimpleJdbcInsert(dataSource).withTableName("reminder").usingGeneratedKeyColumns("id");
-        this.cacheManager = cacheManager;
     }
 
     @Cacheable(value = "chat_reminders", key = "#chatId")

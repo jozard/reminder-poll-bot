@@ -3,7 +3,6 @@ package com.jozard.reminderpollbot.actions;
 import com.jozard.reminderpollbot.service.ChatService;
 import com.jozard.reminderpollbot.service.MessageService;
 import com.jozard.reminderpollbot.service.StateMachine;
-import com.jozard.reminderpollbot.service.StickerService;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageReplyMarkup;
 import org.telegram.telegrambots.meta.api.objects.User;
@@ -16,8 +15,8 @@ import java.time.LocalTime;
 @Component
 public class UpdateTime extends RequestWithReminderTimeKeyboard {
 
-    public UpdateTime(MessageService messageService, ChatService chatService, StickerService stickerService) {
-        super(messageService, chatService, stickerService);
+    public UpdateTime(MessageService messageService, ChatService chatService) {
+        super(messageService, chatService);
     }
 
     @Override

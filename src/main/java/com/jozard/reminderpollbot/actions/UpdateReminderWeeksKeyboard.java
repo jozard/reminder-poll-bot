@@ -3,7 +3,6 @@ package com.jozard.reminderpollbot.actions;
 import com.jozard.reminderpollbot.service.ChatService;
 import com.jozard.reminderpollbot.service.MessageService;
 import com.jozard.reminderpollbot.service.StateMachine;
-import com.jozard.reminderpollbot.service.StickerService;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageReplyMarkup;
 import org.telegram.telegrambots.meta.api.objects.User;
@@ -14,11 +13,8 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 @Component
 public class UpdateReminderWeeksKeyboard extends RequestWithReminderWeeksKeyboard {
 
-    private final StickerService stickerService;
-
-    public UpdateReminderWeeksKeyboard(ChatService chatService, StickerService stickerService, MessageService messageService) {
+    public UpdateReminderWeeksKeyboard(ChatService chatService, MessageService messageService) {
         super(chatService, messageService);
-        this.stickerService = stickerService;
     }
 
     @Override

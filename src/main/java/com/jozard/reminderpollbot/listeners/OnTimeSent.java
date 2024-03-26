@@ -1,6 +1,6 @@
 package com.jozard.reminderpollbot.listeners;
 
-import com.jozard.reminderpollbot.actions.CreateReminder;
+import com.jozard.reminderpollbot.actions.SubmitReminder;
 import com.jozard.reminderpollbot.service.ChatService;
 import com.jozard.reminderpollbot.service.MessageService;
 import com.jozard.reminderpollbot.service.StateMachine;
@@ -19,11 +19,11 @@ import java.time.temporal.ChronoUnit;
 @Component
 public class OnTimeSent extends ChatListener {
 
-    private final CreateReminder createReminder;
+    private final SubmitReminder submitReminder;
 
-    public OnTimeSent(MessageService messageService, ChatService chatService, CreateReminder createReminder) {
+    public OnTimeSent(MessageService messageService, ChatService chatService, SubmitReminder submitReminder) {
         super(messageService, chatService);
-        this.createReminder = createReminder;
+        this.submitReminder = submitReminder;
     }
 
 
@@ -40,7 +40,7 @@ public class OnTimeSent extends ChatListener {
                     timeSent.getMinute()).truncatedTo(ChronoUnit.MINUTES));
 
             logger.info("Time {} added by the user {}", state.getTime(), user.getUserName());
-            this.createReminder.execute(absSender, user, chatId, new String[]{});
+            this.submitReminder.execute(absSender, user, chatId, new String[]{});
         } catch (DateTimeParseException e) {
             ReplyKeyboardRemove keyboardRemove = ReplyKeyboardRemove.builder().removeKeyboard(false).build();
             messageService.send(absSender, chatId,

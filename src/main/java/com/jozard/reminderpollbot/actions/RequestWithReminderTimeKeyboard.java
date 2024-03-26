@@ -1,8 +1,7 @@
 package com.jozard.reminderpollbot.actions;
 
-import com.jozard.reminderpollbot.service.MessageService;
-import com.jozard.reminderpollbot.service.StickerService;
 import com.jozard.reminderpollbot.service.ChatService;
+import com.jozard.reminderpollbot.service.MessageService;
 import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
@@ -15,11 +14,9 @@ import java.util.List;
 import java.util.Optional;
 
 public abstract class RequestWithReminderTimeKeyboard extends Action {
-    private final StickerService stickerService;
 
-    public RequestWithReminderTimeKeyboard(MessageService messageService, ChatService chatService, StickerService stickerService) {
+    public RequestWithReminderTimeKeyboard(MessageService messageService, ChatService chatService) {
         super(messageService, chatService);
-        this.stickerService = stickerService;
     }
 
     protected InlineKeyboardMarkup markup(long chatId, User user, int hour, int minute) {

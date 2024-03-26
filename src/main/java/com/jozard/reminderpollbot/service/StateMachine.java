@@ -8,6 +8,7 @@ import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ScheduledFuture;
 
 public class StateMachine {
 
@@ -19,6 +20,8 @@ public class StateMachine {
     private ReminderState currentState = ReminderState.NONE;
     private String title;
     private LocalTime time;
+
+    private ScheduledFuture<?> cleanupTask;
 
     public StateMachine(User user, Long chatId) {
         this.user = user;
@@ -110,6 +113,14 @@ public class StateMachine {
 
     public void setPendingDeleteTitle() {
         this.currentState = ReminderState.PENDING_DELETE_TITLE;
+    }
+
+    public ScheduledFuture<?> getCleanupTask() {
+        return cleanupTask;
+    }
+
+    public void setCleanupTask(ScheduledFuture<?> cleanupTask) {
+        this.cleanupTask = cleanupTask;
     }
 
     public enum ReminderState {

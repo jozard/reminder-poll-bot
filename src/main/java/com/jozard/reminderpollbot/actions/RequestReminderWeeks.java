@@ -3,7 +3,6 @@ package com.jozard.reminderpollbot.actions;
 import com.jozard.reminderpollbot.service.ChatService;
 import com.jozard.reminderpollbot.service.MessageService;
 import com.jozard.reminderpollbot.service.StateMachine;
-import com.jozard.reminderpollbot.service.StickerService;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
@@ -11,12 +10,8 @@ import org.telegram.telegrambots.meta.bots.AbsSender;
 
 @Component
 public class RequestReminderWeeks extends RequestWithReminderWeeksKeyboard {
-
-    private final StickerService stickerService;
-
-    public RequestReminderWeeks(ChatService chatService, StickerService stickerService, MessageService messageService) {
+    public RequestReminderWeeks(ChatService chatService, MessageService messageService) {
         super(chatService, messageService);
-        this.stickerService = stickerService;
     }
 
     @Override
@@ -26,7 +21,9 @@ public class RequestReminderWeeks extends RequestWithReminderWeeksKeyboard {
         InlineKeyboardMarkup keyboardMarkup = markup(chatId, user, page);
 
         messageService.send(absSender, chatId,
-                "Reply me with a comma-separated list of week numbers or use the buttons below.",
+                """
+                        Reply me with a comma-separated list of week numbers or use the buttons below.
+                        The poll will be shown in these weeks.""",
                 keyboardMarkup);
     }
 

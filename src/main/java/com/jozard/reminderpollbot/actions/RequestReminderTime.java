@@ -3,7 +3,6 @@ package com.jozard.reminderpollbot.actions;
 import com.jozard.reminderpollbot.service.ChatService;
 import com.jozard.reminderpollbot.service.MessageService;
 import com.jozard.reminderpollbot.service.StateMachine;
-import com.jozard.reminderpollbot.service.StickerService;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
@@ -17,8 +16,8 @@ import java.time.temporal.ChronoUnit;
 @Component
 public class RequestReminderTime extends RequestWithReminderTimeKeyboard {
 
-    public RequestReminderTime(MessageService messageService, ChatService chatService, StickerService stickerService) {
-        super(messageService, chatService, stickerService);
+    public RequestReminderTime(MessageService messageService, ChatService chatService) {
+        super(messageService, chatService);
     }
 
     @Override
@@ -39,7 +38,9 @@ public class RequestReminderTime extends RequestWithReminderTimeKeyboard {
             state.setTime(LocalTime.ofInstant(at, ZoneId.of("UTC")));
             InlineKeyboardMarkup keyboardMarkup = markup(chatId, user, hour, minute);
             messageService.send(absSender, chatId,
-                    "Reply me with a time in format HH:mm or use the buttons below to select reminder time (UTC).",
+                    """
+                            Reply me with a time in format HH:mm or use the buttons below to select reminder time (UTC).
+                            The poll will be shown at this time.""",
                     keyboardMarkup);
         }
     }

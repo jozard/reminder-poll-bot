@@ -16,7 +16,7 @@ public class Stop extends UserAwareCommand {
 
     public static final String NAME = "stop";
     public static final String DESCRIPTION = """
-            With this command you can cancel any ongoing activity with this bot, for example, a new poll creation.
+            With this command you can cancel any ongoing interaction with the bot.
             """;
 
     public Stop(MessageService messageService, ChatService chatService) {

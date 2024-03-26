@@ -45,7 +45,8 @@ public class ReminderService {
         int week = now.get(ChronoField.ALIGNED_WEEK_OF_YEAR);
         repo.get(week, dayOfWeek, now.getHour()).stream().filter(
                 item -> item.getAt().getMinute() == now.getMinute()).forEach(item -> {
-            SendPoll poll = new SendPoll(String.valueOf(item.getChatId()), item.getTitle(), List.of("Yes", "No"));
+            SendPoll poll = new SendPoll(String.valueOf(item.getChatId()), item.getTitle(),
+                    List.of("\uD83D\uDC4D", "\uD83D\uDC4E"));
             poll.setIsAnonymous(false);
             try {
                 absSender.execute(poll);

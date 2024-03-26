@@ -45,7 +45,7 @@ public class ReminderPollBot extends TelegramLongPollingCommandBot implements Ap
     private final AddDayOfWeek addDayOfWeek;
     private final AddAllDaysOfWeek addAllDaysOfWeek;
     private final RequestReminderWeeks requestReminderWeeks;
-    private final CreateReminder createReminder;
+    private final SubmitReminder submitReminder;
     private final RequestReminderDays requestReminderDays;
     private final RequestReminderTime requestReminderTime;
     private final UpdateReminderWeeksKeyboard updateReminderWeeksKeyboard;
@@ -60,7 +60,7 @@ public class ReminderPollBot extends TelegramLongPollingCommandBot implements Ap
     private final ShowReminderList showReminderList;
     private final RequestDeleteTitle requestDeleteTitle;
 
-    public ReminderPollBot(@Value("${botConfig.token}") String token, ChatService chatService, Start start, Stop stop, AddReminder addReminder, AddWeek addWeek, AddAllWeeks addAllWeeks, AddDayOfWeek addDayOfWeek, AddAllDaysOfWeek addAllDaysOfWeek, RequestReminderWeeks requestReminderWeeks, CreateReminder createReminder, RequestReminderDays requestReminderDays, RequestReminderTime requestReminderTime, UpdateReminderWeeksKeyboard updateReminderWeeksKeyboard, OnReminderTitleSent onReminderTitleSent, OnWeeksSent onWeeksSent, OnTimeSent onTimeSent, OnDeleteTitleSent onDeleteTitleSent, UpdateTime updateTime, ReminderService reminderService, ShowReminderList showReminderList, RequestDeleteTitle requestDeleteTitle) throws TelegramApiException {
+    public ReminderPollBot(@Value("${botConfig.token}") String token, ChatService chatService, Start start, Stop stop, AddReminder addReminder, AddWeek addWeek, AddAllWeeks addAllWeeks, AddDayOfWeek addDayOfWeek, AddAllDaysOfWeek addAllDaysOfWeek, RequestReminderWeeks requestReminderWeeks, SubmitReminder submitReminder, RequestReminderDays requestReminderDays, RequestReminderTime requestReminderTime, UpdateReminderWeeksKeyboard updateReminderWeeksKeyboard, OnReminderTitleSent onReminderTitleSent, OnWeeksSent onWeeksSent, OnTimeSent onTimeSent, OnDeleteTitleSent onDeleteTitleSent, UpdateTime updateTime, ReminderService reminderService, ShowReminderList showReminderList, RequestDeleteTitle requestDeleteTitle) throws TelegramApiException {
         super(new DefaultBotOptions(), true, token);
         this.chatService = chatService;
         this.addReminder = addReminder;
@@ -69,7 +69,7 @@ public class ReminderPollBot extends TelegramLongPollingCommandBot implements Ap
         this.addDayOfWeek = addDayOfWeek;
         this.addAllDaysOfWeek = addAllDaysOfWeek;
         this.requestReminderWeeks = requestReminderWeeks;
-        this.createReminder = createReminder;
+        this.submitReminder = submitReminder;
         this.requestReminderDays = requestReminderDays;
         this.requestReminderTime = requestReminderTime;
         this.updateReminderWeeksKeyboard = updateReminderWeeksKeyboard;
@@ -232,7 +232,7 @@ public class ReminderPollBot extends TelegramLongPollingCommandBot implements Ap
                             new String[]{day, callbackQuery.getId(), messageId, callbackQuery.getInlineMessageId()});
                 }
             } else if (callbackQuery.getData().equals("btn_time_done")) {
-                this.createReminder.execute(this, user, chatId,
+                this.submitReminder.execute(this, user, chatId,
                         new String[]{callbackQuery.getId()});
             } else if (callbackQuery.getData().contains("btn_time_")) {
                 logger.info("{} button pressed", callbackQuery.getData());

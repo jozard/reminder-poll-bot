@@ -3,7 +3,6 @@ package com.jozard.reminderpollbot.actions;
 import com.jozard.reminderpollbot.service.ChatService;
 import com.jozard.reminderpollbot.service.MessageService;
 import com.jozard.reminderpollbot.service.StateMachine;
-import com.jozard.reminderpollbot.service.StickerService;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
@@ -22,11 +21,9 @@ import java.util.Locale;
 public class RequestReminderDays extends Action {
 
     private static final String AT_LEAST_ONE_WEEK_NUMBER_REQUIRED = "At least one week number required";
-    private final StickerService stickerService;
 
-    public RequestReminderDays(MessageService messageService, ChatService chatService, StickerService stickerService) {
+    public RequestReminderDays(MessageService messageService, ChatService chatService) {
         super(messageService, chatService);
-        this.stickerService = stickerService;
     }
 
     @Override
@@ -42,7 +39,9 @@ public class RequestReminderDays extends Action {
             state.pendingDays();
             InlineKeyboardMarkup keyboardMarkup = markup(chatId, user);
             messageService.send(absSender, chatId,
-                    "Use the buttons below to select days of week.",
+                    """
+                            Use the buttons below to select days of week.
+                            The poll will be shown at these days.""",
                     keyboardMarkup);
         }
     }

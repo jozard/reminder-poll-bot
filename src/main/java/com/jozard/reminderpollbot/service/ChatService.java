@@ -9,12 +9,17 @@ import org.telegram.telegrambots.meta.api.objects.User;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ScheduledFuture;
 
 @Service
 public class ChatService {
     protected final Logger logger = LoggerFactory.getLogger(this.getClass());
     // chat_id -> group
     private final Map<Long, StateMachine> chats = new HashMap<>();
+    private final Map<Long, ScheduledFuture<Long>> cleanupTasks = new HashMap<>();
+
+    public ChatService() {
+    }
 
     public final StateMachine getOrCreate(long chatId, User user) {
         // if no such instance, create one with the user
@@ -25,6 +30,7 @@ public class ChatService {
 
     public final void remove(long chatId) {
         logger.info("Remove state machine for chat ID = " + chatId);
+        chats.get(chatId).getCleanupTask().cancel(true);
         chats.remove(chatId);
     }
 

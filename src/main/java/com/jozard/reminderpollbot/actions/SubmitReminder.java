@@ -15,12 +15,12 @@ import org.telegram.telegrambots.meta.bots.AbsSender;
 import java.text.MessageFormat;
 
 @Component
-public class CreateReminder extends Action {
+public class SubmitReminder extends Action {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final ReminderService reminderService;
 
-    public CreateReminder(ChatService chatService, MessageService messageService, ReminderService reminderService) {
+    public SubmitReminder(ChatService chatService, MessageService messageService, ReminderService reminderService) {
         super(messageService, chatService);
         this.reminderService = reminderService;
     }
@@ -42,13 +42,13 @@ public class CreateReminder extends Action {
                 reminderService.add(reminder.build());
                 chatService.remove(chatId);
                 ReplyKeyboardRemove keyboardRemove = ReplyKeyboardRemove.builder().removeKeyboard(true).build();
-                messageService.send(absSender, chatId, "Reminder created", keyboardRemove);
+                messageService.send(absSender, chatId, "The poll reminder created.", keyboardRemove);
             } else {
                 if (arguments.length > 0) {
                     String callbackQueryId = arguments[0];
                     sendAnswerCallbackQuery(absSender,
                             MessageFormat.format(
-                                    "{0}, you have already been adding/removing a reminder. Answer the last request or use the /start command {1}",
+                                    "{0}, you have already been adding/removing a reminder. Answer the last request or use the /stop command {1}",
                                     user.getUserName(), ":wink:"), callbackQueryId);
                 } else {
                     logger.info(

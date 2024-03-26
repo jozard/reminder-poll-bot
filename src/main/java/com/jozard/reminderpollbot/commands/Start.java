@@ -6,7 +6,6 @@ import com.jozard.reminderpollbot.service.MessageService;
 import com.jozard.reminderpollbot.service.ReminderService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Chat;
 import org.telegram.telegrambots.meta.api.objects.User;
@@ -22,11 +21,11 @@ public class Start extends Command {
 
     public static final String NAME = "start";
     public static final String DESCRIPTION = """
-            With this command you can start the Bot.""";
+            With this command you can show the bot actions available.""";
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final ReminderService reminderService;
 
-    public Start(MessageService messageService, ChatService chatService, ThreadPoolTaskScheduler scheduler, ReminderService reminderService) {
+    public Start(MessageService messageService, ChatService chatService, ReminderService reminderService) {
         super(messageService, chatService, NAME, DESCRIPTION);
         this.reminderService = reminderService;
     }
