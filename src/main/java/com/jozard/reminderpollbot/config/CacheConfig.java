@@ -15,7 +15,7 @@ public class CacheConfig {
 
     @Bean
     public Caffeine caffeine() {
-        return Caffeine.newBuilder().weakKeys().weakValues().expireAfterAccess(Duration.ofMinutes(5));
+        return Caffeine.newBuilder().expireAfterAccess(Duration.ofMinutes(10));
     }
 
     @Bean
