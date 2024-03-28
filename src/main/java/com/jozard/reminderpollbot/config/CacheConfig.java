@@ -14,14 +14,14 @@ import java.time.Duration;
 public class CacheConfig {
 
     @Bean
-    public Caffeine caffeineConfig() {
-        return Caffeine.newBuilder().expireAfterWrite(Duration.ofHours(1));
+    public Caffeine caffeine() {
+        return Caffeine.newBuilder().weakKeys().weakValues().expireAfterAccess(Duration.ofMinutes(5));
     }
 
     @Bean
-    public CacheManager cacheManager(Caffeine caffeine) {
+    public CacheManager cacheManager() {
         CaffeineCacheManager caffeineCacheManager = new CaffeineCacheManager();
-        caffeineCacheManager.setCaffeine(caffeine);
+        caffeineCacheManager.setCaffeine(caffeine());
         return caffeineCacheManager;
     }
 
